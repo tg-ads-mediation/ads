@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    // General
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "target": "ES2016",
+    "outDir": "./dist",
+    "declaration": true,
+    "resolveJsonModule": true,
+    // Checks
+    "allowUnreachableCode": false,
+    // "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    // Production specific
+    "removeComments": true,
+    "sourceMap": false,
+    // Optimizations
+    "skipLibCheck": true
+  },
+  "include": ["./src"]
+}
