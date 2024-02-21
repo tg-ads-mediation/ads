@@ -1,6 +1,7 @@
 import {OpenRTB25} from '@clearcodehq/openrtb';
 
 export type AdType = 'video' | 'banner';
+type StatsAction = 'view' | 'click';
 
 const iframeId = 'tg-ads-mediation--ads';
 
@@ -27,11 +28,17 @@ export interface Placement {
   height: number;
 }
 
+interface AdResponse {
+  id: string;
+  ad: string;
+}
+
 export class Ads {
   private readonly device: OpenRTB25.Device;
   private readonly user: OpenRTB25.User;
   private readonly sspUrl: string;
   private readonly apiVersion: number;
+  private readonly testMode: boolean;
 
   constructor(params: AdsParams) {
     const {userId, language, test, apiVersion = 1} = params;
@@ -53,6 +60,7 @@ export class Ads {
         : test
       : 'https://ssp.tgadhub.com';
     this.apiVersion = apiVersion;
+    this.testMode = Boolean(test);
   }
 
   public showRewardedVideo(): Promise<boolean> {
@@ -86,27 +94,14 @@ export class Ads {
       return false;
     }
 
-    const ad: OpenRTB25.BidResponse = await response.json();
-    if (
-      ad.seatbid == null ||
-      ad.seatbid.length === 0 ||
-      ad.seatbid[0] == null ||
-      ad.seatbid[0].bid.length === 0 ||
-      ad.seatbid[0].bid[0] == null ||
-      ad.seatbid[0].bid[0].adm == null
-    ) {
-      console.error('No ad available.');
-      return false;
-    }
-
-    let adContent = ad.seatbid[0].bid[0].adm;
+    let {id: adId, ad: adContent}: AdResponse = await response.json();
     if (adContent.indexOf('<HTMLResource') !== -1) {
       adContent = adContent
         .substring(adContent.indexOf('<HTMLResource'), adContent.indexOf('</HTMLResource>'))
         .replace('</html>]]>', '');
     }
 
-    const iframe = this.createPlacement(type);
+    const iframe = this.createPlacement(type, adId);
 
     iframe.srcdoc = `
       <style>
@@ -128,7 +123,7 @@ export class Ads {
     return true;
   }
 
-  private createPlacement(type: AdType): HTMLIFrameElement {
+  private createPlacement(type: AdType, adId: string): HTMLIFrameElement {
     const iframe = document.createElement('iframe');
     iframe.id = iframeId + '__' + String(Math.random()).substring(2);
     iframe.style.position = 'fixed';
@@ -147,6 +142,38 @@ export class Ads {
       iframe.style.height = '100px';
     }
 
+    iframe.onload = () => {
+      this.sendStats({impressionId: adId, action: 'view'});
+
+      const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
+      if (iframeDocument) {
+        iframeDocument.body.addEventListener(
+          'click',
+          (event) => {
+            // todo improve the logic
+            if ((event.target as HTMLElement).tagName === 'DIV') {
+              this.sendStats({impressionId: adId, action: 'click'});
+            }
+          },
+          true
+        );
+      }
+    };
+
     return iframe;
+  }
+
+  private async sendStats(params: {impressionId: string; action: StatsAction}) {
+    fetch(`${this.sspUrl}/api/v${this.apiVersion}/stats`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    }).catch((error) => {
+      if (this.testMode) {
+        console.warn('Failed to send stats.', error);
+      }
+    });
   }
 }
