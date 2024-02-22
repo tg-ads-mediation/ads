@@ -16,6 +16,12 @@ function calcScreenDPI() {
   return dpi;
 }
 
+interface Subscribers {
+  [key: string]: {
+    onClose: () => void;
+  };
+}
+
 export interface AdsParams {
   userId?: string;
   language?: string;
@@ -33,7 +39,15 @@ interface AdResponse {
   ad: string;
 }
 
+export interface AdEvents {
+  onNotFound?: () => void;
+  onOpen?: () => void;
+  onClose?: () => void;
+}
+
 export class Ads {
+  private subscribers: Subscribers = {};
+  private readonly onPostMessage: (event: MessageEvent) => void;
   private readonly device: OpenRTB25.Device;
   private readonly user: OpenRTB25.User;
   private readonly sspUrl: string;
@@ -61,17 +75,30 @@ export class Ads {
       : 'https://ssp.tgadhub.com';
     this.apiVersion = apiVersion;
     this.testMode = Boolean(test);
+
+    this.onPostMessage = (event: MessageEvent) => {
+      this.handlePostMessage(event);
+    };
+    window.addEventListener('message', this.onPostMessage);
   }
 
-  public showRewardedVideo(): Promise<boolean> {
-    return this.show('video');
+  public showRewardedVideo(listeners?: AdEvents): Promise<boolean> {
+    return this.show('video', listeners);
   }
 
-  public showBottomBanner(): Promise<boolean> {
-    return this.show('banner');
+  public showBottomBanner(listeners?: AdEvents): Promise<boolean> {
+    return this.show('banner', listeners);
   }
 
-  private async show(type: AdType = 'video'): Promise<boolean> {
+  public destroy() {
+    window.removeEventListener('message', this.onPostMessage);
+    this.subscribers = {};
+  }
+
+  private async show(type: AdType = 'video', listeners?: AdEvents): Promise<boolean> {
+    const noop = () => {};
+    const {onNotFound = noop, onOpen = noop, onClose = noop} = listeners || {};
+
     const placement: Placement = {
       width: window.innerWidth,
       height: type === 'video' ? window.innerHeight : 100
@@ -91,6 +118,7 @@ export class Ads {
     });
     if (response.status !== 200) {
       console.error('Failed to fetch an ad.');
+      onNotFound();
       return false;
     }
 
@@ -103,6 +131,7 @@ export class Ads {
 
     const iframe = this.createPlacement(type, adId);
 
+    // todo try UI elements stopPropagation to not count clicks on them
     iframe.srcdoc = `
       <style>
         body {
@@ -116,9 +145,16 @@ export class Ads {
         }
       </style>
       ${adContent}
-      <button style="position: absolute;top: 15px;right: 15px;cursor: pointer;z-index:9999" onclick="window.parent.document.body.removeChild(window.parent.document.getElementById('${iframe.id}'))">Close</button>
+      <button
+        style="position: absolute; top: 15px; right: 15px; cursor: pointer;z-index:9999;"
+        onclick="(function(){window.parent.postMessage({adId: '${adId}', event: 'close'});window.parent.document.body.removeChild(window.parent.document.getElementById('${iframe.id}'));})()">
+        Close
+      </button>
     `;
     document.body.appendChild(iframe);
+
+    onOpen();
+    this.subscribers[adId] = {onClose};
 
     return true;
   }
@@ -175,5 +211,19 @@ export class Ads {
         console.warn('Failed to send stats.', error);
       }
     });
+  }
+
+  private handlePostMessage(event: MessageEvent<{adId: string; event: string}>) {
+    if (event.origin !== window.location.origin || event.data == null) {
+      return;
+    }
+
+    const data = event.data;
+    const subscriber = this.subscribers[data.adId];
+    if (data.event !== 'close' || subscriber == null) {
+      return;
+    }
+    subscriber.onClose();
+    delete this.subscribers[data.adId];
   }
 }
