@@ -12,6 +12,7 @@ The package is in the early preview stage, so you can try the alpha version:
 import {Ads} from '@tg-ads-mediation/ads'
 
 const ads = new Ads({
+    key: 'your-access-key',
     userId: window.Telegram.WebApp.initData.user.id,
     language: window.Telegram.WebApp.initData.user.language_code
 })

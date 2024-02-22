@@ -23,6 +23,7 @@ interface Subscribers {
 }
 
 export interface AdsParams {
+  key: string;
   userId?: string;
   language?: string;
   apiVersion?: 1;
@@ -47,7 +48,9 @@ export interface AdEvents {
 
 export class Ads {
   private subscribers: Subscribers = {};
-  private readonly onPostMessage: (event: MessageEvent) => void;
+  private onPostMessage: (event: MessageEvent) => void;
+
+  private readonly publisherKey: string;
   private readonly device: OpenRTB25.Device;
   private readonly user: OpenRTB25.User;
   private readonly sspUrl: string;
@@ -55,8 +58,9 @@ export class Ads {
   private readonly testMode: boolean;
 
   constructor(params: AdsParams) {
-    const {userId, language, test, apiVersion = 1} = params;
+    const {key, userId, language, test, apiVersion = 1} = params;
 
+    this.publisherKey = key;
     this.device = {
       ua: navigator.userAgent,
       pxratio: window.devicePixelRatio,
@@ -92,6 +96,7 @@ export class Ads {
 
   public destroy() {
     window.removeEventListener('message', this.onPostMessage);
+    this.onPostMessage = () => {};
     this.subscribers = {};
   }
 
@@ -111,6 +116,7 @@ export class Ads {
       },
       body: JSON.stringify({
         adType: type,
+        publisherKey: this.publisherKey,
         device: this.device,
         user: this.user,
         placement
