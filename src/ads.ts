@@ -1,9 +1,9 @@
 import {OpenRTB25} from '@clearcodehq/openrtb';
+import {AdResponse, AdType, AdPlacement, AdRequest} from './client-server-protocol';
+import {iframeContent, videoAd} from './ads-templates';
+import {idPrefix} from './consts';
 
-export type AdType = 'video' | 'banner';
 type StatsAction = 'view' | 'click';
-
-const iframeId = 'tg-ads-mediation--ads';
 
 function calcScreenDPI() {
   const element = document.createElement('div');
@@ -16,7 +16,7 @@ function calcScreenDPI() {
   return dpi;
 }
 
-interface Subscribers {
+export interface Subscribers {
   [key: string]: {
     onClose: () => void;
   };
@@ -28,16 +28,6 @@ export interface AdsParams {
   language?: string;
   apiVersion?: 1;
   test?: true | string;
-}
-
-export interface Placement {
-  width: number;
-  height: number;
-}
-
-interface AdResponse {
-  id: string;
-  ad: string;
 }
 
 export interface AdEvents {
@@ -104,23 +94,31 @@ export class Ads {
     const noop = () => {};
     const {onNotFound = noop, onOpen = noop, onClose = noop} = listeners || {};
 
-    const placement: Placement = {
+    const placement: AdPlacement = {
       width: window.innerWidth,
       height: type === 'video' ? window.innerHeight : 100
     };
+
+    const requestBody: AdRequest = {
+      adType: type,
+      publisherKey: this.publisherKey,
+      device: this.device,
+      user: this.user,
+      placement
+    };
+    if (this.testMode) {
+      requestBody['debug'] = {
+        responseStub: (window as any)['tgAdsMediation']?.['responseStub'],
+        customPayload: (window as any)['tgAdsMediation']?.['customPayload']
+      };
+    }
 
     const response = await fetch(`${this.sspUrl}/api/v${this.apiVersion}/ad`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        adType: type,
-        publisherKey: this.publisherKey,
-        device: this.device,
-        user: this.user,
-        placement
-      })
+      body: JSON.stringify(requestBody)
     });
     if (response.status !== 200) {
       console.error('Failed to fetch an ad.');
@@ -128,46 +126,30 @@ export class Ads {
       return false;
     }
 
-    let {id: adId, ad: adContent}: AdResponse = await response.json();
-    if (adContent.indexOf('<HTMLResource') !== -1) {
-      adContent = adContent
-        .substring(adContent.indexOf('<HTMLResource'), adContent.indexOf('</HTMLResource>'))
-        .replace('</html>]]>', '');
-    }
+    const adResponse: AdResponse = await response.json();
+    const adContent =
+      adResponse.type === 'video'
+        ? videoAd({
+            src: adResponse.ad.video.creative.src,
+            link: adResponse.ad.video.creative.clickThrough,
+            companionMarkup: adResponse.ad.companion.markup,
+            debug: this.testMode
+          })
+        : adResponse.ad.markup;
 
-    const iframe = this.createPlacement(type, adId);
-
-    // todo try UI elements stopPropagation to not count clicks on them
-    iframe.srcdoc = `
-      <style>
-        body {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          margin: 0;
-          padding: 0;
-          background-color: var(--tg-theme-bg-color);
-        }
-      </style>
-      ${adContent}
-      <button
-        style="position: absolute; top: 15px; right: 15px; cursor: pointer;z-index:9999;"
-        onclick="(function(){window.parent.postMessage({adId: '${adId}', event: 'close'});window.parent.document.body.removeChild(window.parent.document.getElementById('${iframe.id}'));})()">
-        Close
-      </button>
-    `;
+    const iframe = this.createPlacement(type, adResponse.id);
+    iframe.srcdoc = iframeContent({iframe, adId: adResponse.id, adContent});
     document.body.appendChild(iframe);
 
     onOpen();
-    this.subscribers[adId] = {onClose};
+    this.subscribers[adResponse.id] = {onClose};
 
     return true;
   }
 
   private createPlacement(type: AdType, adId: string): HTMLIFrameElement {
     const iframe = document.createElement('iframe');
-    iframe.id = iframeId + '__' + String(Math.random()).substring(2);
+    iframe.id = idPrefix + '__' + String(Math.random()).substring(2);
     iframe.style.position = 'fixed';
     iframe.style.width = '100%';
     iframe.style.zIndex = '9999';
@@ -192,9 +174,15 @@ export class Ads {
         iframeDocument.body.addEventListener(
           'click',
           (event) => {
-            // todo improve the logic
-            if ((event.target as HTMLElement).tagName === 'DIV') {
+            if (
+              event.target !== iframeDocument.body &&
+              (!(event.target as HTMLElement).id ||
+                (event.target as HTMLElement).id.indexOf(idPrefix) === -1)
+            ) {
+              if (this.testMode) console.info('click sent');
               this.sendStats({impressionId: adId, action: 'click'});
+            } else {
+              if (this.testMode) console.info('click NOT sent');
             }
           },
           true
@@ -213,9 +201,7 @@ export class Ads {
       },
       body: JSON.stringify(params)
     }).catch((error) => {
-      if (this.testMode) {
-        console.warn('Failed to send stats.', error);
-      }
+      if (this.testMode) console.warn('Failed to send stats.', error);
     });
   }
 
