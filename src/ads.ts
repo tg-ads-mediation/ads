@@ -178,10 +178,12 @@ export class Ads {
         iframeDocument.body.addEventListener(
           'click',
           (event) => {
+            // todo improve click detection logic
             if (
               event.target !== iframeDocument.body &&
               (!(event.target as HTMLElement).id ||
-                (event.target as HTMLElement).id.indexOf(idPrefix) === -1)
+                (event.target as HTMLElement).id.indexOf(idPrefix) === -1) &&
+              !['path', 'rect', 'svg'].includes((event.target as HTMLElement).tagName.toLowerCase())
             ) {
               if (this.testMode) console.info('click sent');
               this.sendStats({requestId: ad.id, action: 'view', burl: undefined});
