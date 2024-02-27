@@ -30,7 +30,8 @@ const isBannerShown = await ads.showBottomBanner()
 ads.showRewardedVideo({
     onNotFound: () => console.info('no ad found'),
     onOpen: () => console.info('ad opened'),
-    onClose: () => console.info('ad closed')
+    onClose: () => console.info('ad closed'),
+    onError: (error) => console.error('ad error', error)
 })
 
 // open and not found as a promise result, close as a callback

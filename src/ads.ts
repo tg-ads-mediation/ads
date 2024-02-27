@@ -32,6 +32,7 @@ export interface AdEvents {
   onNotFound?: () => void;
   onOpen?: () => void;
   onClose?: () => void;
+  onError?: (error: Error) => void;
 }
 
 export class Ads {
@@ -90,59 +91,64 @@ export class Ads {
 
   private async show(type: AdType = 'video', listeners?: AdEvents): Promise<boolean> {
     const noop = () => {};
-    const {onNotFound = noop, onOpen = noop, onClose = noop} = listeners || {};
+    const {onNotFound = noop, onOpen = noop, onClose = noop, onError = noop} = listeners || {};
 
-    const placement: AdPlacement = {
-      width: window.innerWidth,
-      height: type === 'video' ? window.innerHeight : 100
-    };
-
-    const requestBody: AdRequest = {
-      adType: type,
-      publisherKey: this.publisherKey,
-      device: this.device,
-      user: this.user,
-      placement
-    };
-    if ((window as any)['tgAdsMediation']) {
-      requestBody['debug'] = {
-        responseStub: (window as any)['tgAdsMediation']?.['responseStub'],
-        customPayload: (window as any)['tgAdsMediation']?.['customPayload']
+    try {
+      const placement: AdPlacement = {
+        width: window.innerWidth,
+        height: type === 'video' ? window.innerHeight : 100
       };
-    }
 
-    const response = await fetch(`${this.sspUrl}/api/v${this.apiVersion}/ad`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
-    if (response.status !== 200) {
-      console.error('Failed to fetch an ad.');
-      onNotFound();
+      const requestBody: AdRequest = {
+        adType: type,
+        publisherKey: this.publisherKey,
+        device: this.device,
+        user: this.user,
+        placement
+      };
+      if ((window as any)['tgAdsMediation']) {
+        requestBody['debug'] = {
+          responseStub: (window as any)['tgAdsMediation']?.['responseStub'],
+          customPayload: (window as any)['tgAdsMediation']?.['customPayload']
+        };
+      }
+
+      const response = await fetch(`${this.sspUrl}/api/v${this.apiVersion}/ad`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      if (response.status !== 200) {
+        console.error('Failed to fetch an ad.');
+        onNotFound();
+        return false;
+      }
+
+      const adResponse: AdResponse = await response.json();
+      const adContent =
+        adResponse.type === 'video'
+          ? videoAd({
+              src: adResponse.ad.video.creative.src,
+              link: adResponse.ad.video.creative.clickThrough,
+              companionMarkup: adResponse.ad.companion.markup,
+              debug: this.testMode
+            })
+          : adResponse.ad.markup;
+
+      const iframe = this.createPlacement(adResponse);
+      iframe.srcdoc = iframeContent({iframe, adId: adResponse.id, adContent});
+      document.body.appendChild(iframe);
+
+      onOpen();
+      this.subscribers[adResponse.id] = {onClose};
+
+      return true;
+    } catch (error) {
+      onError(error);
       return false;
     }
-
-    const adResponse: AdResponse = await response.json();
-    const adContent =
-      adResponse.type === 'video'
-        ? videoAd({
-            src: adResponse.ad.video.creative.src,
-            link: adResponse.ad.video.creative.clickThrough,
-            companionMarkup: adResponse.ad.companion.markup,
-            debug: this.testMode
-          })
-        : adResponse.ad.markup;
-
-    const iframe = this.createPlacement(adResponse);
-    iframe.srcdoc = iframeContent({iframe, adId: adResponse.id, adContent});
-    document.body.appendChild(iframe);
-
-    onOpen();
-    this.subscribers[adResponse.id] = {onClose};
-
-    return true;
   }
 
   private createPlacement(ad: AdResponse): HTMLIFrameElement {
