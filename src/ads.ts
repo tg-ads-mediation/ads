@@ -186,7 +186,7 @@ export class Ads {
               !['path', 'rect', 'svg'].includes((event.target as HTMLElement).tagName.toLowerCase())
             ) {
               if (this.testMode) console.info('click sent');
-              this.sendStats({requestId: ad.id, action: 'view', burl: undefined});
+              this.sendStats({requestId: ad.id, action: 'click', burl: undefined});
             } else {
               if (this.testMode) console.info('click NOT sent');
             }
