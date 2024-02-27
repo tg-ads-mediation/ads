@@ -1,9 +1,7 @@
 import {OpenRTB25} from '@clearcodehq/openrtb';
-import {AdResponse, AdType, AdPlacement, AdRequest} from './client-server-protocol';
+import {AdResponse, AdType, AdPlacement, AdRequest, StatsRequest} from './client-server-protocol';
 import {iframeContent, videoAd} from './ads-templates';
 import {idPrefix} from './consts';
-
-type StatsAction = 'view' | 'click';
 
 function calcScreenDPI() {
   const element = document.createElement('div');
@@ -64,7 +62,7 @@ export class Ads {
     };
     this.sspUrl = test
       ? test === true
-        ? 'https://test.ssp.tgadhub.com'
+        ? 'https://ssp-test.tgadhub.com'
         : test
       : 'https://ssp.tgadhub.com';
     this.apiVersion = apiVersion;
@@ -106,7 +104,7 @@ export class Ads {
       user: this.user,
       placement
     };
-    if (this.testMode) {
+    if ((window as any)['tgAdsMediation']) {
       requestBody['debug'] = {
         responseStub: (window as any)['tgAdsMediation']?.['responseStub'],
         customPayload: (window as any)['tgAdsMediation']?.['customPayload']
@@ -137,7 +135,7 @@ export class Ads {
           })
         : adResponse.ad.markup;
 
-    const iframe = this.createPlacement(type, adResponse.id);
+    const iframe = this.createPlacement(adResponse);
     iframe.srcdoc = iframeContent({iframe, adId: adResponse.id, adContent});
     document.body.appendChild(iframe);
 
@@ -147,7 +145,7 @@ export class Ads {
     return true;
   }
 
-  private createPlacement(type: AdType, adId: string): HTMLIFrameElement {
+  private createPlacement(ad: AdResponse): HTMLIFrameElement {
     const iframe = document.createElement('iframe');
     iframe.id = idPrefix + '__' + String(Math.random()).substring(2);
     iframe.style.position = 'fixed';
@@ -156,7 +154,7 @@ export class Ads {
     iframe.style.backgroundColor = 'white';
     iframe.style.border = 'none';
 
-    if (type === 'video') {
+    if (ad.type === 'video') {
       iframe.style.top = '0';
       iframe.style.left = '0';
       iframe.style.height = '100%';
@@ -167,7 +165,7 @@ export class Ads {
     }
 
     iframe.onload = () => {
-      this.sendStats({impressionId: adId, action: 'view'});
+      this.sendStats({requestId: ad.id, action: 'view', burl: ad.ad.hooks.burl});
 
       const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
       if (iframeDocument) {
@@ -180,7 +178,7 @@ export class Ads {
                 (event.target as HTMLElement).id.indexOf(idPrefix) === -1)
             ) {
               if (this.testMode) console.info('click sent');
-              this.sendStats({impressionId: adId, action: 'click'});
+              this.sendStats({requestId: ad.id, action: 'view', burl: undefined});
             } else {
               if (this.testMode) console.info('click NOT sent');
             }
@@ -193,7 +191,7 @@ export class Ads {
     return iframe;
   }
 
-  private async sendStats(params: {impressionId: string; action: StatsAction}) {
+  private async sendStats(params: StatsRequest) {
     fetch(`${this.sspUrl}/api/v${this.apiVersion}/stats`, {
       method: 'POST',
       headers: {

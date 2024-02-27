@@ -16,7 +16,17 @@ export interface AdRequest {
   [key: string]: any;
 }
 
+export interface AdHooks {
+  nurl?: string;
+  burl?: string;
+}
+
 export interface BannerAdContent {
+  markup: string;
+  hooks: AdHooks;
+}
+
+export interface VideoCompanionContent {
   markup: string;
 }
 
@@ -24,7 +34,8 @@ export interface VideoAdContent {
   video: {
     creative: VideoCreative;
   };
-  companion: BannerAdContent;
+  companion: VideoCompanionContent;
+  hooks: AdHooks;
 }
 
 export interface VideoCreative {
@@ -49,3 +60,11 @@ export interface VideoAdResponse {
 }
 
 export type AdResponse = BannerAdResponse | VideoAdResponse;
+
+export type StatsAction = 'view' | 'click';
+
+export interface StatsRequest {
+  requestId: string;
+  action: StatsAction;
+  burl: string | undefined;
+}
