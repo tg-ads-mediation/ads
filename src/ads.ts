@@ -168,6 +168,13 @@ export class Ads {
       iframe.style.bottom = '0';
       iframe.style.left = '0';
       iframe.style.height = '100px';
+
+      if (ad.ad.size && ad.ad.size.width && ad.ad.size.height) {
+        iframe.style.width = `${ad.ad.size.width}px`;
+        iframe.style.height = `${ad.ad.size.height}px`;
+        iframe.style.left = '50%';
+        iframe.style.transform = 'translateX(-50%)';
+      }
     }
 
     iframe.onload = () => {

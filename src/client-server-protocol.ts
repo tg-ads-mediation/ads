@@ -21,13 +21,20 @@ export interface AdHooks {
   burl?: string;
 }
 
+export interface BannerSize {
+  width: number;
+  height: number;
+}
+
 export interface BannerAdContent {
   markup: string;
   hooks: AdHooks;
+  size?: BannerSize;
 }
 
 export interface VideoCompanionContent {
   markup: string;
+  size?: BannerSize;
 }
 
 export interface VideoAdContent {
@@ -41,6 +48,7 @@ export interface VideoAdContent {
 export interface VideoCreative {
   src: string;
   clickThrough: string;
+  size?: BannerSize;
 }
 
 export type AdContent = BannerAdContent | VideoAdContent;

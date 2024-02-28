@@ -97,7 +97,7 @@ export function iframeContent({iframe, adId, adContent}: IframeContentParams) {
         height: 100vh;
         margin: 0;
         padding: 0;
-        background-color: var(--tg-theme-bg-color);
+        background-color: transparent;
       }
     </style>
     ${adContent}
