@@ -26,6 +26,7 @@ export function videoAd({companionMarkup, src, link, debug = false}: VideoAdPara
       "
       src="${src}"
       muted
+      playsinline
       autoplay
     ></video>
     <button
@@ -44,13 +45,8 @@ export function videoAd({companionMarkup, src, link, debug = false}: VideoAdPara
 
       if (player) {
         player.onplay = () => {
-          try {
-            player.muted = false;
-            if (soundButton) {
-              soundButton.style.display = 'block';
-            }
-          } catch (e) {
-            if (debug) console.warn('Failed to unmute ad video.');
+          if (soundButton) {
+            soundButton.style.display = 'block';
           }
         };
         player.onended = () => {
