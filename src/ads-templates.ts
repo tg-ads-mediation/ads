@@ -1,4 +1,4 @@
-import {closeButtonId, soundButtonId, soundOffIconId, soundOnIconId, videoPlayerId} from './consts';
+import {closeButtonId, soundButtonId, soundOffIconId, soundOnIconId} from './consts';
 import {closeIcon, soundOffIcon, soundOnIcon} from './icons';
 
 export interface VideoAdParams {
@@ -13,7 +13,6 @@ export function videoAd({companionMarkup, src, link, debug = false}: VideoAdPara
   return html`
     ${companionMarkup}
     <video
-      id="${videoPlayerId}"
       style="
         position:absolute;
         top:0;
@@ -38,7 +37,7 @@ export function videoAd({companionMarkup, src, link, debug = false}: VideoAdPara
     </button>
     <script>
       const debug = ${debug};
-      const player = document.getElementById('${videoPlayerId}');
+      const player = document.getElementsByTagName('video')[0];
       const soundButton = document.getElementById('${soundButtonId}');
       const soundOnIcon = document.getElementById('${soundOnIconId}');
       const soundOffIcon = document.getElementById('${soundOffIconId}');
