@@ -1,18 +1,15 @@
 import {OpenRTB25} from '@clearcodehq/openrtb';
-import {AdResponse, AdType, AdPlacement, AdRequest, StatsRequest} from './client-server-protocol';
+import {
+  AdResponse,
+  AdType,
+  AdPlacement,
+  AdRequest,
+  StatsRequest,
+  MiniAppData
+} from './client-server-protocol';
 import {iframeContent, videoAd} from './ads-templates';
 import {idPrefix} from './consts';
-
-function calcScreenDPI() {
-  const element = document.createElement('div');
-  element.style.width = '1in';
-  document.body.appendChild(element);
-
-  const dpi = element.offsetWidth * devicePixelRatio;
-
-  element.remove();
-  return dpi;
-}
+import {calcScreenDpi, getThemeParams, getUserData} from './helpers';
 
 export interface Subscribers {
   [key: string]: {
@@ -22,9 +19,6 @@ export interface Subscribers {
 
 export interface AdsParams {
   key: string;
-  userId?: string;
-  language?: string;
-  apiVersion?: 1;
   test?: true | string;
 }
 
@@ -45,29 +39,36 @@ export class Ads {
   private readonly sspUrl: string;
   private readonly apiVersion: number;
   private readonly testMode: boolean;
+  private readonly miniAppData: MiniAppData;
 
   constructor(params: AdsParams) {
-    const {key, userId, language, test, apiVersion = 1} = params;
+    const {key, test} = params;
+    const user = getUserData();
+    const theme = getThemeParams();
 
     this.publisherKey = key;
     this.device = {
       ua: navigator.userAgent,
       pxratio: window.devicePixelRatio,
-      ppi: calcScreenDPI(),
+      ppi: calcScreenDpi(),
       w: screen.width,
       h: screen.height,
-      language: language || navigator.language
+      language: user.languageCode || navigator.language
     };
     this.user = {
-      id: userId
+      id: String(user.id)
     };
     this.sspUrl = test
       ? test === true
         ? 'https://ssp-test.tgadhub.com'
         : test
       : 'https://ssp.tgadhub.com';
-    this.apiVersion = apiVersion;
+    this.apiVersion = 1;
     this.testMode = Boolean(test);
+    this.miniAppData = {
+      user,
+      theme
+    };
 
     this.onPostMessage = (event: MessageEvent) => {
       this.handlePostMessage(event);
@@ -104,10 +105,11 @@ export class Ads {
         publisherKey: this.publisherKey,
         device: this.device,
         user: this.user,
-        placement
+        placement,
+        miniAppData: this.miniAppData
       };
       if ((window as any)['tgAdsMediation']) {
-        requestBody['debug'] = {
+        requestBody.debug = {
           responseStub: (window as any)['tgAdsMediation']?.['responseStub'],
           customPayload: (window as any)['tgAdsMediation']?.['customPayload']
         };

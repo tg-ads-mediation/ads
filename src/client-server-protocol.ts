@@ -7,13 +7,53 @@ export interface AdPlacement {
   height: number;
 }
 
+export interface MiniAppUser {
+  addedToAttachmentMenu?: boolean;
+  allowsWriteToPm?: boolean;
+  firstName: string;
+  id: number;
+  isBot?: boolean;
+  isPremium?: boolean;
+  lastName?: string;
+  languageCode?: string;
+  photoUrl?: string;
+  username?: string;
+}
+
+export type RgbColor = `#${string}`;
+
+export interface MiniAppTheme {
+  accentTextColor: RgbColor;
+  backgroundColor: RgbColor;
+  buttonColor: RgbColor;
+  buttonTextColor: RgbColor;
+  destructiveTextColor: RgbColor;
+  headerBackgroundColor: RgbColor;
+  hintColor: RgbColor;
+  linkColor: RgbColor;
+  secondaryBackgroundColor: RgbColor;
+  sectionBackgroundColor: RgbColor;
+  sectionHeaderTextColor: RgbColor;
+  subtitleTextColor: RgbColor;
+  textColor: RgbColor;
+}
+
+export interface MiniAppData {
+  user: MiniAppUser;
+  theme: MiniAppTheme;
+}
+
 export interface AdRequest {
   publisherKey: string;
   adType: AdType;
   device: OpenRTB25.Device;
   user: OpenRTB25.User;
   placement: AdPlacement;
-  [key: string]: any;
+  miniAppData: MiniAppData;
+  debug?: {
+    customPayload?: string;
+    responseStub?: string;
+  };
 }
 
 export interface AdHooks {
