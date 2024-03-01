@@ -7,7 +7,7 @@ import {
   StatsRequest,
   MiniAppData
 } from './client-server-protocol';
-import {iframeContent, videoAd} from './ads-templates';
+import {bannerAd, iframeContent, videoAd} from './ads-templates';
 import {idPrefix} from './consts';
 import {calcScreenDpi, getThemeParams, getUserData} from './helpers';
 
@@ -135,9 +135,10 @@ export class Ads {
               src: adResponse.ad.video.creative.src,
               link: adResponse.ad.video.creative.clickThrough,
               companionMarkup: adResponse.ad.companion.markup,
-              debug: this.testMode
+              debug: this.testMode,
+              theme: this.miniAppData.theme
             })
-          : adResponse.ad.markup;
+          : bannerAd({markup: adResponse.ad.markup, theme: this.miniAppData.theme});
 
       const iframe = this.createPlacement(adResponse);
       iframe.srcdoc = iframeContent({iframe, adId: adResponse.id, adContent});
