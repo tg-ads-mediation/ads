@@ -13,8 +13,8 @@ import {Ads} from '@tg-ads-mediation/ads'
 
 const ads = new Ads({
     key: 'your-access-key',
-    userId: window.Telegram.WebApp.initData.user.id,
-    language: window.Telegram.WebApp.initData.user.language_code
+    // for dev mode or testing
+    test: true
 })
 
 // methods return whether the ad was found and shown or not
