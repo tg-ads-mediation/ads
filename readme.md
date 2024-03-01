@@ -1,10 +1,18 @@
 # @tg-ads-mediation/ads
 
+## Demo
+
+Check out the [demo](https://t.me/AdsInMiniAppsDemoBot/DemoApp) app to see the ads in action.
+
 ## Installation
 
 The package is in the early preview stage, so you can try the alpha version:
 
 `npm install --save @tg-ads-mediation/ads@alpha`
+
+## Requirements
+
+You need to install either `https://telegram.org/js/telegram-web-app.js` or [tma.js](https://github.com/Telegram-Mini-Apps/tma.js) into your project to use the Mini App Platform and the ads library.
 
 ## Usage
 
