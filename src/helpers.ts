@@ -1,4 +1,5 @@
 import {MiniAppUser, MiniAppTheme} from './client-server-protocol';
+import {idPrefix} from './consts';
 
 export function calcScreenDpi() {
   const element = document.createElement('div');
@@ -11,10 +12,20 @@ export function calcScreenDpi() {
   return dpi;
 }
 
+function generateStubId(): number {
+  // 111 is a prefix to recognize stub ids from real ones
+  return 1110000000000 + Math.floor(Math.random() * 9000000000) + 1000000000;
+}
+
+const initDataKey = idPrefix + 'init-data';
+
 export function getUserData(): MiniAppUser {
+  let data: MiniAppUser | null = null;
+
   if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
     const {user} = window.Telegram.WebApp.initDataUnsafe;
-    return {
+
+    data = {
       addedToAttachmentMenu: user.added_to_attachment_menu,
       allowsWriteToPm: user.allows_write_to_pm,
       firstName: user.first_name,
@@ -26,13 +37,27 @@ export function getUserData(): MiniAppUser {
       photoUrl: user.photo_url,
       username: user.username
     };
+  } else if (window.tmajsLaunchData?.launchParams?.initData?.user) {
+    data = window.tmajsLaunchData.launchParams.initData.user;
+  } else {
+    // Opening an app via keyboard button leads there is no initData
+    // In this case try to read the data from previous launches
+    // It will be the data either with real data or with generated values
+    const storedData = localStorage.getItem(initDataKey);
+    data =
+      storedData != null
+        ? // todo check data from localStorage
+          (JSON.parse(storedData) as MiniAppUser)
+        : {
+            firstName: 'Anonymous',
+            id: generateStubId(),
+            languageCode: navigator.language
+          };
   }
 
-  if (window.tmajsLaunchData?.launchParams?.initData?.user) {
-    return window.tmajsLaunchData.launchParams.initData.user;
-  }
+  localStorage.setItem(initDataKey, JSON.stringify(data));
 
-  throw new Error('Telegram Mini App platform is not detected.');
+  return data;
 }
 
 export function getThemeParams(): MiniAppTheme {
