@@ -1,4 +1,9 @@
+// copied from backend
+
 import {OpenRTB25} from '@clearcodehq/openrtb';
+
+export const idPrefix = 'tg-ads-mediation--ads__';
+export const adContainerId = idPrefix + 'ad-';
 
 export type AdType = 'video' | 'banner';
 
@@ -20,6 +25,10 @@ export interface MiniAppUser {
   username?: string;
 }
 
+export interface AdsUser extends MiniAppUser {
+  timeZone: string;
+}
+
 export type RgbColor = `#${string}`;
 
 export interface MiniAppTheme {
@@ -39,7 +48,7 @@ export interface MiniAppTheme {
 }
 
 export interface MiniAppData {
-  user: MiniAppUser;
+  user: AdsUser;
   theme: MiniAppTheme;
 }
 
@@ -56,6 +65,8 @@ export interface AdRequest {
   };
 }
 
+// Response
+
 export interface AdHooks {
   nurl?: string;
   burl?: string;
@@ -68,7 +79,6 @@ export interface BannerSize {
 
 export interface BannerAdContent {
   markup: string;
-  hooks: AdHooks;
   size?: BannerSize;
 }
 
@@ -78,16 +88,24 @@ export interface VideoCompanionContent {
 }
 
 export interface VideoAdContent {
-  video: {
-    creative: VideoCreative;
-  };
-  companion: VideoCompanionContent;
-  hooks: AdHooks;
+  markup: string;
+}
+
+export interface Impression {
+  id?: string;
+  content?: string;
+}
+
+export interface TrackingEvent {
+  event?: string;
+  content?: string;
 }
 
 export interface VideoCreative {
   src: string;
   clickThrough: string;
+  impressions?: Impression[];
+  trackingEvents?: TrackingEvent[];
   size?: BannerSize;
 }
 

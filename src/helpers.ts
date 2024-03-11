@@ -1,5 +1,5 @@
-import {MiniAppUser, MiniAppTheme} from './client-server-protocol';
-import {idPrefix} from './consts';
+import {AdsUser, MiniAppTheme} from './client-server-protocol';
+import {idPrefix} from './client-server-protocol';
 
 export function calcScreenDpi() {
   const element = document.createElement('div');
@@ -19,8 +19,9 @@ function generateStubId(): number {
 
 const initDataKey = idPrefix + 'init-data';
 
-export function getUserData(): MiniAppUser {
-  let data: MiniAppUser | null = null;
+export function getUserData(): AdsUser {
+  let data: AdsUser | null = null;
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
     const {user} = window.Telegram.WebApp.initDataUnsafe;
@@ -35,10 +36,11 @@ export function getUserData(): MiniAppUser {
       lastName: user.last_name,
       languageCode: user.language_code,
       photoUrl: user.photo_url,
-      username: user.username
+      username: user.username,
+      timeZone
     };
   } else if (window.tmajsLaunchData?.launchParams?.initData?.user) {
-    data = window.tmajsLaunchData.launchParams.initData.user;
+    data = {...window.tmajsLaunchData.launchParams.initData.user, timeZone};
   } else {
     // Opening an app via keyboard button leads there is no initData
     // In this case try to read the data from previous launches
@@ -47,11 +49,12 @@ export function getUserData(): MiniAppUser {
     data =
       storedData != null
         ? // todo check data from localStorage
-          (JSON.parse(storedData) as MiniAppUser)
+          (JSON.parse(storedData) as AdsUser)
         : {
             firstName: 'Anonymous',
             id: generateStubId(),
-            languageCode: navigator.language
+            languageCode: navigator.language,
+            timeZone
           };
   }
 

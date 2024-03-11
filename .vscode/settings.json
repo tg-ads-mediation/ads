@@ -6,5 +6,15 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
-  "lit-html.tags": ["html", "template"]
+  "lit-html.tags": ["html", "template"],
+  "cSpell.words": [
+    "clearcodehq",
+    "noopener",
+    "noreferrer",
+    "nurl",
+    "openrtb",
+    "playsinline",
+    "pxratio",
+    "tmajs"
+  ]
 }

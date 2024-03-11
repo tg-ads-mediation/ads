@@ -1,14 +1,6 @@
 import {OpenRTB25} from '@clearcodehq/openrtb';
-import {
-  AdResponse,
-  AdType,
-  AdPlacement,
-  AdRequest,
-  StatsRequest,
-  MiniAppData
-} from './client-server-protocol';
-import {bannerAd, iframeContent, videoAd} from './ads-templates';
-import {idPrefix} from './consts';
+import {AdResponse, AdType, AdPlacement, AdRequest, MiniAppData} from './client-server-protocol';
+import {adContainerId} from './client-server-protocol';
 import {calcScreenDpi, getThemeParams, getUserData} from './helpers';
 
 export interface Subscribers {
@@ -38,7 +30,6 @@ export class Ads {
   private readonly user: OpenRTB25.User;
   private readonly sspUrl: string;
   private readonly apiVersion: number;
-  private readonly testMode: boolean;
   private readonly miniAppData: MiniAppData;
 
   constructor(params: AdsParams) {
@@ -64,7 +55,6 @@ export class Ads {
         : test
       : 'https://ssp.tgadhub.com';
     this.apiVersion = 1;
-    this.testMode = Boolean(test);
     this.miniAppData = {
       user,
       theme
@@ -108,11 +98,9 @@ export class Ads {
         placement,
         miniAppData: this.miniAppData
       };
-      if ((window as any)['tgAdsMediation']) {
-        requestBody.debug = {
-          responseStub: (window as any)['tgAdsMediation']?.['responseStub'],
-          customPayload: (window as any)['tgAdsMediation']?.['customPayload']
-        };
+      const debug = localStorage.getItem('tgAdsMediationDebug');
+      if (debug) {
+        requestBody.debug = JSON.parse(debug);
       }
 
       const response = await fetch(`${this.sspUrl}/api/v${this.apiVersion}/ad`, {
@@ -127,21 +115,10 @@ export class Ads {
         onNotFound();
         return false;
       }
-
       const adResponse: AdResponse = await response.json();
-      const adContent =
-        adResponse.type === 'video'
-          ? videoAd({
-              src: adResponse.ad.video.creative.src,
-              link: adResponse.ad.video.creative.clickThrough,
-              companionMarkup: adResponse.ad.companion.markup,
-              debug: this.testMode,
-              theme: this.miniAppData.theme
-            })
-          : bannerAd({markup: adResponse.ad.markup, theme: this.miniAppData.theme});
 
       const iframe = this.createPlacement(adResponse);
-      iframe.srcdoc = iframeContent({iframe, adId: adResponse.id, adContent});
+      iframe.srcdoc = adResponse.ad.markup;
       document.body.appendChild(iframe);
 
       onOpen();
@@ -156,7 +133,7 @@ export class Ads {
 
   private createPlacement(ad: AdResponse): HTMLIFrameElement {
     const iframe = document.createElement('iframe');
-    iframe.id = idPrefix + '__' + String(Math.random()).substring(2);
+    iframe.id = adContainerId + ad.id;
     iframe.style.position = 'fixed';
     iframe.style.width = '100%';
     iframe.style.zIndex = '9999';
@@ -180,45 +157,7 @@ export class Ads {
       }
     }
 
-    iframe.onload = () => {
-      this.sendStats({requestId: ad.id, action: 'view', burl: ad.ad.hooks.burl});
-
-      const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
-      if (iframeDocument) {
-        iframeDocument.body.addEventListener(
-          'click',
-          (event) => {
-            // todo improve click detection logic
-            if (
-              event.target !== iframeDocument.body &&
-              (!(event.target as HTMLElement).id ||
-                (event.target as HTMLElement).id.indexOf(idPrefix) === -1) &&
-              !['path', 'rect', 'svg'].includes((event.target as HTMLElement).tagName.toLowerCase())
-            ) {
-              if (this.testMode) console.info('click sent');
-              this.sendStats({requestId: ad.id, action: 'click', burl: undefined});
-            } else {
-              if (this.testMode) console.info('click NOT sent');
-            }
-          },
-          true
-        );
-      }
-    };
-
     return iframe;
-  }
-
-  private async sendStats(params: StatsRequest) {
-    fetch(`${this.sspUrl}/api/v${this.apiVersion}/stats`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(params)
-    }).catch((error) => {
-      if (this.testMode) console.warn('Failed to send stats.', error);
-    });
   }
 
   private handlePostMessage(event: MessageEvent<{adId: string; event: string}>) {
@@ -231,6 +170,7 @@ export class Ads {
     if (data.event !== 'close' || subscriber == null) {
       return;
     }
+    document.getElementById(adContainerId + data.adId)?.remove();
     subscriber.onClose();
     delete this.subscribers[data.adId];
   }
