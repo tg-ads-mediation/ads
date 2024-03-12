@@ -129,8 +129,20 @@ export type AdResponse = BannerAdResponse | VideoAdResponse;
 
 export type StatsAction = 'view' | 'click';
 
+export interface PlaybackEvents {
+  start?: string[];
+  firstQuartile?: string[];
+  midpoint?: string[];
+  thirdQuartile?: string[];
+  complete?: string[];
+  skip?: string[];
+  [key: string]: string[] | undefined;
+}
+
 export interface StatsRequest {
   requestId: string;
-  action: StatsAction;
-  burl: string | undefined;
+  view?: string[];
+  click?: string[];
+  reward?: string[];
+  playback?: PlaybackEvents;
 }
