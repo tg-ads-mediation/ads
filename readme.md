@@ -2,7 +2,7 @@
 
 ## Demo
 
-Check out the [demo](https://t.me/AdsInMiniAppsDemoBot/DemoApp) app to see the ads in action.
+Check out the [demo bot](https://t.me/AdsInMiniAppsDemoBot) to see the ads in action.
 
 ## Installation
 
