@@ -38,6 +38,7 @@ const isBannerShown = await ads.showBottomBanner()
 ads.showRewardedVideo({
     onNotFound: () => console.info('no ad found'),
     onOpen: () => console.info('ad opened'),
+    onReward: () => console.info('got a reward'),
     onClose: () => console.info('ad closed'),
     onError: (error) => console.error('ad error', error)
 })

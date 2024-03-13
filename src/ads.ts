@@ -5,6 +5,7 @@ import {calcScreenDpi, getThemeParams, getUserData} from './helpers';
 
 export interface Subscribers {
   [key: string]: {
+    onReward: () => void;
     onClose: () => void;
   };
 }
@@ -17,6 +18,7 @@ export interface AdsParams {
 export interface AdEvents {
   onNotFound?: () => void;
   onOpen?: () => void;
+  onReward?: () => void;
   onClose?: () => void;
   onError?: (error: Error) => void;
 }
@@ -82,7 +84,13 @@ export class Ads {
 
   private async show(type: AdType = 'video', listeners?: AdEvents): Promise<boolean> {
     const noop = () => {};
-    const {onNotFound = noop, onOpen = noop, onClose = noop, onError = noop} = listeners || {};
+    const {
+      onNotFound = noop,
+      onOpen = noop,
+      onReward = noop,
+      onClose = noop,
+      onError = noop
+    } = listeners || {};
 
     try {
       const placement: AdPlacement = {
@@ -122,7 +130,7 @@ export class Ads {
       document.body.appendChild(iframe);
 
       onOpen();
-      this.subscribers[adResponse.id] = {onClose};
+      this.subscribers[adResponse.id] = {onReward, onClose};
 
       return true;
     } catch (error) {
@@ -167,11 +175,16 @@ export class Ads {
 
     const data = event.data;
     const subscriber = this.subscribers[data.adId];
-    if (data.event !== 'close' || subscriber == null) {
+    if (subscriber == null) {
       return;
     }
-    document.getElementById(adContainerId + data.adId)?.remove();
-    subscriber.onClose();
-    delete this.subscribers[data.adId];
+
+    if (data.event === 'reward') {
+      subscriber.onReward();
+    } else if (data.event === 'close') {
+      document.getElementById(adContainerId + data.adId)?.remove();
+      subscriber.onClose();
+      delete this.subscribers[data.adId];
+    }
   }
 }
