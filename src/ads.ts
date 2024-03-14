@@ -12,7 +12,7 @@ export interface Subscribers {
 
 export interface AdsParams {
   key: string;
-  test?: true | string;
+  test?: boolean | string;
 }
 
 export interface AdEvents {
@@ -168,7 +168,7 @@ export class Ads {
     return iframe;
   }
 
-  private handlePostMessage(event: MessageEvent<{adId: string; event: string}>) {
+  private handlePostMessage(event: MessageEvent<{adId: string; event: string; link?: string}>) {
     if (event.origin !== window.location.origin || event.data == null) {
       return;
     }
@@ -179,7 +179,17 @@ export class Ads {
       return;
     }
 
-    if (data.event === 'reward') {
+    if (data.event === 'openAdLink' && data.link) {
+      // todo check if it's web, then use approach:
+      // https://docs.telegram-mini-apps.com/platform/methods#web
+      window.TelegramWebviewProxy?.postEvent(
+        'web_app_open_link',
+        JSON.stringify({
+          url: data.link,
+          try_instant_view: true
+        })
+      );
+    } else if (data.event === 'reward') {
       subscriber.onReward();
     } else if (data.event === 'close') {
       document.getElementById(adContainerId + data.adId)?.remove();

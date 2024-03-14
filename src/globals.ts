@@ -33,6 +33,9 @@ export interface ThemeTgScript {
 
 declare global {
   interface Window {
+    TelegramWebviewProxy?: {
+      postEvent: (message: string, params?: string) => void;
+    };
     Telegram?: {
       WebApp?: {
         initDataUnsafe?: {
