@@ -27,6 +27,7 @@ export interface MiniAppUser {
 
 export interface AdsUser extends MiniAppUser {
   timeZone: string;
+  generatedId?: number;
 }
 
 export type RgbColor = `#${string}`;

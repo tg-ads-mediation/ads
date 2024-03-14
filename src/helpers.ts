@@ -18,9 +18,11 @@ function generateStubId(): number {
 }
 
 const initDataKey = idPrefix + 'init-data';
+const generatedIdKey = idPrefix + 'generated-id';
 
 export function getUserData(): AdsUser {
   let data: AdsUser | null = null;
+  let generatedId = localStorage.getItem(generatedIdKey);
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
@@ -37,25 +39,36 @@ export function getUserData(): AdsUser {
       languageCode: user.language_code,
       photoUrl: user.photo_url,
       username: user.username,
-      timeZone
+      timeZone,
+      generatedId: Number(generatedId)
     };
   } else if (window.tmajsLaunchData?.launchParams?.initData?.user) {
-    data = {...window.tmajsLaunchData.launchParams.initData.user, timeZone};
+    data = {
+      ...window.tmajsLaunchData.launchParams.initData.user,
+      timeZone,
+      generatedId: Number(generatedId)
+    };
   } else {
     // Opening an app via keyboard button leads there is no initData
     // In this case try to read the data from previous launches
     // It will be the data either with real data or with generated values
     const storedData = localStorage.getItem(initDataKey);
-    data =
-      storedData != null
-        ? // todo check data from localStorage
-          (JSON.parse(storedData) as AdsUser)
-        : {
-            firstName: 'Anonymous',
-            id: generateStubId(),
-            languageCode: navigator.language,
-            timeZone
-          };
+    if (storedData != null) {
+      // todo check data from localStorage
+      data = JSON.parse(storedData) as AdsUser;
+    } else {
+      if (generatedId == null) {
+        generatedId = String(generateStubId());
+        localStorage.setItem(generatedIdKey, generatedId);
+      }
+
+      data = {
+        firstName: 'Unknown',
+        id: Number(generatedId),
+        languageCode: navigator.language,
+        timeZone
+      };
+    }
   }
 
   localStorage.setItem(initDataKey, JSON.stringify(data));
