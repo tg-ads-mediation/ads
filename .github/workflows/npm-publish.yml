@@ -3,9 +3,8 @@ name: Publish to NPM
 on:
   push:
     tags:
-      # major.minor.patch - required
-      # -tag.build - optional
-      - '*.*.*'
+      # v means this is a version tag
+      - '*-v*'
 
 jobs:
   build:
@@ -14,25 +13,34 @@ jobs:
     steps:
       - id: get-package
         run: |
-          echo "::set-output name=version::${GITHUB_REF#refs/tags/}"
-          echo "::set-output name=tag::$(echo ${GITHUB_REF#refs/tags/} | grep -oP '(?<=\d\.\d\.\d-)\w+' || echo 'latest')"
+          FULL_TAG=${GITHUB_REF#refs/tags/}
+          PACKAGE_NAME=$(echo $FULL_TAG | cut -d- -f1)
+          ALLOWED_PACKAGES=("cdn" "npm")
+          if [[ " ${ALLOWED_PACKAGES[@]} " =~ " ${PACKAGE_NAME} " ]]; then
+            echo "::set-output name=package::${PACKAGE_NAME}"
+            echo "::set-output name=version::$(echo $FULL_TAG | cut -d- -f2-)"
+            echo "::set-output name=tag::$(echo $FULL_TAG | grep -oP '(?<=\d\.\d\.\d-)\w+' || echo 'latest')"
+          else
+            echo "Invalid package name ${PACKAGE_NAME}."
+            exit 1
+          fi
         shell: bash
 
       - uses: actions/checkout@v4
+
+      - name: Check version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./packages/${${{steps.get-package.outputs.package}}}/package.json').version")
+          if [[ "${{steps.get-package.outputs.version}}" != "v${PACKAGE_VERSION}" ]]; then
+            echo "Tag version ${{steps.get-package.outputs.version}} does not match package version ${PACKAGE_VERSION}."
+            exit 1
+          fi
 
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Check version
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          if [[ "${{steps.get-package.outputs.version}}" != "${PACKAGE_VERSION}" ]]; then
-            echo "Tag version ${{steps.get-package.outputs.version}} does not match package version ${PACKAGE_VERSION}."
-            exit 1
-          fi
 
       - name: Install dependencies
         run: npm ci
