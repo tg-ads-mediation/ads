@@ -30,7 +30,7 @@ jobs:
 
       - name: Check version
         run: |
-          PACKAGE_VERSION=$(node -p "require('./packages/${${{steps.get-package.outputs.package}}}/package.json').version")
+          PACKAGE_VERSION=$(node -p "require('./packages/${{steps.get-package.outputs.package}}/package.json').version")
           if [[ "${{steps.get-package.outputs.version}}" != "v${PACKAGE_VERSION}" ]]; then
             echo "Tag version ${{steps.get-package.outputs.version}} does not match package version ${PACKAGE_VERSION}."
             exit 1
@@ -46,10 +46,10 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: cd packages/${{steps.get-package.outputs.package}} && npm run build
 
       - name: Publish
         run: |
-          npm publish --access=public --tag=${{ steps.get-package.outputs.tag }}
+          cd packages/${{steps.get-package.outputs.package}} && npm publish --access=public --tag=${{ steps.get-package.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
