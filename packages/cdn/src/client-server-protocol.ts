@@ -131,12 +131,14 @@ export type AdResponse = BannerAdResponse | VideoAdResponse;
 export type StatsAction = 'view' | 'click';
 
 export interface PlaybackEvents {
+  impression?: string[];
   start?: string[];
   firstQuartile?: string[];
   midpoint?: string[];
   thirdQuartile?: string[];
   complete?: string[];
   skip?: string[];
+  // todo try to not use it
   [key: string]: string[] | undefined;
 }
 

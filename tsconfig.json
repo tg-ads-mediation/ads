@@ -6,7 +6,7 @@
     "downlevelIteration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "CommonJS",
+    "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ES2016",
     "outDir": "./dist",
@@ -28,11 +28,9 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
+    "sourceMap": true,
     // Production specific
-    "removeComments": true,
-    "sourceMap": false,
-    // Optimizations
-    "skipLibCheck": true
+    "removeComments": true
   },
-  "include": ["./src"]
+  "include": ["./packages"]
 }

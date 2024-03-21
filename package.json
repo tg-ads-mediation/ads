@@ -1,21 +1,11 @@
 {
-  "name": "@tg-ads-mediation/ads",
-  "version": "0.0.1-alpha.11",
-  "files": ["./dist"],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "tg-ads-mediation",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
   },
-  "scripts": {
-    "dev": "tsc -p tsconfig.dev.json --watch",
-    "build": "tsc",
-    "check-types": "tsc --noEmit",
-    "lint": "prettier --check \"./**/*.{js,jsx,ts,tsx,json,yml}\""
-  },
+  "workspaces": ["packages/*"],
   "devDependencies": {
-    "@clearcodehq/openrtb": "^1.0.1",
     "lefthook": "^1.6.1",
     "typescript": "~5.3.3"
   }

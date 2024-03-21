@@ -1,0 +1,24 @@
+{
+  "name": "@tg-ads-mediation/ads-cdn",
+  "version": "0.0.1-alpha.11",
+  "files": ["./dist"],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "concurrently \"rollup -c -w\" \"http-server -p 3005 dist\"",
+    "build": "rollup -c",
+    "check-types": "tsc --noEmit",
+    "lint": "prettier --check \"./**/*.{js,jsx,ts,tsx,json,yml}\""
+  },
+  "devDependencies": {
+    "@clearcodehq/openrtb": "^1.0.1",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "concurrently": "^8.2.2",
+    "http-server": "^14.1.1",
+    "rollup": "^4.13.0",
+    "tslib": "^2.6.2"
+  }
+}
