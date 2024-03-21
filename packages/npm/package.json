@@ -8,6 +8,6 @@
     "dev": "tsc -p tsconfig.dev.json --watch",
     "build": "tsc",
     "check-types": "tsc --noEmit",
-    "lint": "prettier --check \"./**/*.{js,jsx,ts,tsx,json,yml}\""
+    "lint": "prettier --check \"./src/**/*.{js,jsx,ts,tsx,json,yml}\""
   }
 }

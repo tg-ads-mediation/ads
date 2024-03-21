@@ -9,7 +9,7 @@
     "dev": "concurrently \"rollup -c -w\" \"http-server -p 3005 dist\"",
     "build": "rollup -c",
     "check-types": "tsc --noEmit",
-    "lint": "prettier --check \"./**/*.{js,jsx,ts,tsx,json,yml}\""
+    "lint": "prettier --check \"./src/**/*.{js,jsx,ts,tsx,json,yml}\""
   },
   "devDependencies": {
     "@clearcodehq/openrtb": "^1.0.1",
