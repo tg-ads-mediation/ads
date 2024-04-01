@@ -4,22 +4,23 @@
 
 Check out the [demo bot](https://t.me/AdsInMiniAppsDemoBot) to see the ads in action.
 
-## Installation
-
-The package is in the early preview stage, so you can try the alpha version:
-
-`npm install --save @tg-ads-mediation/ads@alpha`
-
 ## Requirements
 
 You need to install either `https://telegram.org/js/telegram-web-app.js` or [tma.js](https://github.com/Telegram-Mini-Apps/tma.js) into your project to use the Mini App Platform and the ads library.
 
 ## Usage
 
+### With NPM
+
+The package is in the preview stage, so you can try the beta version:
+`npm install --save @tg-ads-mediation/ads@beta`
+
+After installation:
+
 ```typescript
 import {Ads} from '@tg-ads-mediation/ads'
 
-const ads = new Ads({
+const ads = await Ads.create({
     key: 'your-access-key',
     // for dev mode or testing
     test: true
@@ -29,6 +30,22 @@ const ads = new Ads({
 // false means that no proper ad was found
 const isVideoShown = await ads.showRewardedVideo()
 const isBannerShown = await ads.showBottomBanner()
+```
+
+### With CDN
+
+Load the library from the CDN and create an instance of the `tgadhub.Ads` class:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@tg-ads-mediation/ads-cdn/dist/ads.js"></script>
+
+<script>
+  const ads = new window.tgadhub.Ads({
+      key: 'your-access-key',
+      // for dev mode or testing
+      test: true
+  })
+</script>
 ```
 
 ## Handling events
@@ -48,7 +65,6 @@ const isVideoOpen = await ads.showRewardedVideo({
     onClose: () => console.info('ad closed')
 })
 ```
-
 
 # Destroying
 

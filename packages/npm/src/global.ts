@@ -1,4 +1,4 @@
-export interface AdEvents {
+interface AdEvents {
   onNotFound?: () => void;
   onOpen?: () => void;
   onReward?: () => void;
@@ -6,19 +6,28 @@ export interface AdEvents {
   onError?: (error: Error) => void;
 }
 
-export interface AdsParams {
+interface AdsParams {
   key: string;
   test?: boolean | string;
 }
 
-export interface AdsOriginalConstructor {
-  new (params: AdsParams): AdsOriginal;
-}
-
-export interface AdsOriginal {
+declare class Ads {
+  constructor(params: AdsParams);
   showRewardedVideo(listeners?: AdEvents): Promise<boolean>;
   showBottomBanner(listeners?: AdEvents): Promise<boolean>;
   destroy(): void;
 }
 
-export interface AdsClass extends AdsOriginalConstructor, AdsOriginal {}
+interface tgadhub {
+  Ads?: typeof Ads;
+}
+
+declare global {
+  interface Window {
+    tgadhub?: tgadhub;
+  }
+
+  var tgadhub: tgadhub;
+}
+
+export {AdEvents, AdsParams, Ads};

@@ -1,19 +1,20 @@
-import {AdsParams, AdsOriginal, AdEvents, AdsClass} from './types';
+import {AdsParams, Ads as AdsOriginal, AdEvents} from './global';
 
-export * from './types';
+export {AdsParams, AdsOriginal, AdEvents};
 
 export class Ads implements AdsOriginal {
   private readonly instance: AdsOriginal;
 
-  constructor(params: AdsParams) {
+  private constructor(params: AdsParams) {
     const AdsClass = Ads.getOriginalClass();
     this.instance = new AdsClass(params);
   }
 
-  public static async create(params: AdsParams): Promise<Ads> {
+  public static async create(params: AdsParams & {cdnUrl?: string}): Promise<Ads> {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'http://127.0.0.1:3005/ads.js';
+      script.src =
+        params.cdnUrl ?? 'https://cdn.jsdelivr.net/npm/@tg-ads-mediation/ads-cdn/dist/ads.js';
       script.onload = () => {
         try {
           resolve(new Ads(params));
@@ -41,7 +42,7 @@ export class Ads implements AdsOriginal {
     return this.instance.destroy();
   }
 
-  private static getOriginalClass(): AdsClass {
+  private static getOriginalClass(): typeof AdsOriginal {
     if (!window.tgadhub?.Ads) {
       throw new Error(
         'window.tgadhub.Ads is not defined. Please make sure that the script is loaded.'
