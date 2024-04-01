@@ -100,5 +100,19 @@ export function getThemeParams(): MiniAppTheme {
     return window.tmajsLaunchData.launchParams.themeParams;
   }
 
-  throw new Error('Telegram Mini App platform is not detected.');
+  return {
+    accentTextColor: '#168dcd',
+    backgroundColor: '#ffffff',
+    buttonColor: '#40a7e3',
+    buttonTextColor: '#ffffff',
+    destructiveTextColor: '#d14e4e',
+    headerBackgroundColor: '#ffffff',
+    hintColor: '#999999',
+    linkColor: '#168dcd',
+    secondaryBackgroundColor: '#f1f1f1',
+    sectionBackgroundColor: '#ffffff',
+    sectionHeaderTextColor: '#168dcd',
+    subtitleTextColor: '#999999',
+    textColor: '#000000'
+  };
 }
