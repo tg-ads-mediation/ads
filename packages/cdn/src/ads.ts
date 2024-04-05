@@ -182,12 +182,10 @@ export class Ads {
     if (data.event === 'openAdLink' && data.link) {
       // todo check if it's web, then use approach:
       // https://docs.telegram-mini-apps.com/platform/methods#web
-      // @ts-ignore
       window.TelegramWebviewProxy?.postEvent(
         'web_app_open_link',
         JSON.stringify({
-          url: data.link,
-          try_instant_view: true
+          url: data.link
         })
       );
     } else if (data.event === 'reward') {
