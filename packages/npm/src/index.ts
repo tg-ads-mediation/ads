@@ -14,7 +14,8 @@ export class Ads implements AdsOriginal {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src =
-        params.cdnUrl ?? 'https://cdn.jsdelivr.net/npm/@tg-ads-mediation/ads-cdn/dist/ads.js';
+        params.cdnUrl ??
+        'https://cdn.jsdelivr.net/npm/@tg-ads-mediation/ads-cdn@latest/dist/ads.js';
       script.onload = () => {
         try {
           resolve(new Ads(params));
