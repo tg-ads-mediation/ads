@@ -34,18 +34,28 @@ const isBannerShown = await ads.showBottomBanner()
 
 ### With CDN
 
-Load the library from the CDN and create an instance of the `tgadhub.Ads` class:
+Load the library from the CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@tg-ads-mediation/ads-cdn/dist/ads.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tg-ads-mediation/ads-cdn@latest/dist/ads.js"></script>
+```
 
-<script>
-  const ads = new window.tgadhub.Ads({
-      key: 'your-access-key',
-      // for dev mode or testing
-      test: true
+Create an instance of the `tgadhub.Ads` class:
+
+```javascript
+window.addEventListener('load', () => {
+  const ads = new tgadhub.Ads({
+    key: 'your-access-key',
+    // for dev mode or testing
+    test: true
   })
-</script>
+})
+```
+
+To add TypeScript support, install the types:
+
+```bash
+npm install --save-dev @types/tg-ads-mediation__ads-cdn
 ```
 
 ## Handling events
