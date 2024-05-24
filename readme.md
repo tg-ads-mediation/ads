@@ -21,9 +21,7 @@ After installation:
 import {Ads} from '@tg-ads-mediation/ads'
 
 const ads = await Ads.create({
-    key: 'your-access-key',
-    // for dev mode or testing
-    test: true
+    key: 'your-access-key'
 })
 
 // methods return whether the ad was found and shown or not
@@ -45,9 +43,7 @@ Create an instance of the `tgadhub.Ads` class:
 ```javascript
 window.addEventListener('load', () => {
   const ads = new tgadhub.Ads({
-    key: 'your-access-key',
-    // for dev mode or testing
-    test: true
+    key: 'your-access-key'
   })
 })
 ```
@@ -56,6 +52,24 @@ To add TypeScript support, install the types:
 
 ```bash
 npm install --save-dev @types/tg-ads-mediation__ads-cdn
+```
+
+### Development mode
+
+In the development mode test environment and ads stubs are available:
+
+```typescript
+const ads = await Ads.create({
+    key: 'your-access-key',
+    // use the settings in dev mode
+    test: {
+      // use test server
+      enabled: true,
+      // `true` - use stubs to get ads every time
+      // `false` - use real ads, production like
+      stubs: true
+    }
+})
 ```
 
 ## Handling events

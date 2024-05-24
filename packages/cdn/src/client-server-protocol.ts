@@ -60,10 +60,7 @@ export interface AdRequest {
   user: OpenRTB25.User;
   placement: AdPlacement;
   miniAppData: MiniAppData;
-  debug?: {
-    customPayload?: string;
-    responseStub?: string;
-  };
+  stubAds?: boolean;
 }
 
 // Response

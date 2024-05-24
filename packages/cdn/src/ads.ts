@@ -12,7 +12,7 @@ export interface Subscribers {
 
 export interface AdsParams {
   key: string;
-  test?: boolean | string;
+  test?: boolean | string | {enabled?: boolean | string; stubs?: boolean};
 }
 
 export interface AdEvents {
@@ -33,9 +33,11 @@ export class Ads {
   private readonly sspUrl: string;
   private readonly apiVersion: number;
   private readonly miniAppData: MiniAppData;
+  private readonly showAdStubs: boolean;
 
   constructor(params: AdsParams) {
-    const {key, test} = params;
+    const {key, test: testParams} = params;
+    const test = typeof testParams === 'object' ? testParams.enabled : testParams;
     const user = getUserData();
     const theme = getThemeParams();
 
@@ -61,6 +63,7 @@ export class Ads {
       user,
       theme
     };
+    this.showAdStubs = test && typeof testParams === 'object' && testParams.stubs ? true : false;
 
     this.onPostMessage = (event: MessageEvent) => {
       this.handlePostMessage(event);
@@ -106,9 +109,8 @@ export class Ads {
         placement,
         miniAppData: this.miniAppData
       };
-      const debug = localStorage.getItem('tgAdsMediationDebug');
-      if (debug) {
-        requestBody.debug = JSON.parse(debug);
+      if (this.showAdStubs) {
+        requestBody.stubAds = true;
       }
 
       const response = await fetch(`${this.sspUrl}/api/v${this.apiVersion}/ad`, {

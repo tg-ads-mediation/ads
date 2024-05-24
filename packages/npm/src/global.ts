@@ -8,7 +8,7 @@ interface AdEvents {
 
 interface AdsParams {
   key: string;
-  test?: boolean | string;
+  test?: boolean | string | {enabled?: boolean | string; stubs?: boolean};
 }
 
 declare class Ads {
