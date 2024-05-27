@@ -112,14 +112,12 @@ export type AdContent = BannerAdContent | VideoAdContent;
 export interface BannerAdResponse {
   type: 'banner';
   id: string;
-  price: number;
   ad: BannerAdContent;
 }
 
 export interface VideoAdResponse {
   type: 'video';
   id: string;
-  price: number;
   ad: VideoAdContent;
 }
 
