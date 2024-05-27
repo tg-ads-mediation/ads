@@ -1,10 +1,14 @@
 {
   "name": "@tg-ads-mediation/ads-cdn",
-  "version": "1.0.2",
+  "version": "1.1.0-beta.0",
   "files": ["./dist"],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tg-ads-mediation/ads.git"
+  },
   "scripts": {
     "dev": "concurrently \"rollup -c -w\" \"http-server -p 3005 dist\"",
     "build": "rollup -c",
@@ -19,6 +23,7 @@
     "concurrently": "^8.2.2",
     "http-server": "^14.1.1",
     "rollup": "^4.13.0",
+    "rollup-plugin-license": "^3.4.0",
     "tslib": "^2.6.2"
   }
 }

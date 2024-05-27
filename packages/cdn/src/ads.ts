@@ -23,7 +23,10 @@ export interface AdEvents {
   onError?: (error: Error) => void;
 }
 
+export type VisibleAds = Partial<Record<AdType, string>>;
+
 export class Ads {
+  private visibleAds: VisibleAds = {};
   private subscribers: Subscribers = {};
   private onPostMessage: (event: MessageEvent) => void;
 
@@ -79,6 +82,19 @@ export class Ads {
     return this.show('banner', listeners);
   }
 
+  public closeRewardedVideo(): void {
+    this.close('video');
+  }
+
+  public closeBottomBanner(): void {
+    this.close('banner');
+  }
+
+  public closeAll(): void {
+    this.close('video');
+    this.close('banner');
+  }
+
   public destroy() {
     window.removeEventListener('message', this.onPostMessage);
     this.onPostMessage = () => {};
@@ -96,6 +112,8 @@ export class Ads {
     } = listeners || {};
 
     try {
+      this.close(type);
+
       const placement: AdPlacement = {
         width: window.innerWidth,
         height: type === 'video' ? window.innerHeight : 100
@@ -121,7 +139,6 @@ export class Ads {
         body: JSON.stringify(requestBody)
       });
       if (response.status !== 200) {
-        console.error('Failed to fetch an ad.');
         onNotFound();
         return false;
       }
@@ -131,6 +148,7 @@ export class Ads {
       iframe.srcdoc = adResponse.ad.markup;
       document.body.appendChild(iframe);
 
+      this.visibleAds[type] = adResponse.id;
       onOpen();
       this.subscribers[adResponse.id] = {onReward, onClose};
 
@@ -138,6 +156,32 @@ export class Ads {
     } catch (error) {
       onError(error);
       return false;
+    }
+  }
+
+  private close(id: string): void;
+  private close(type: AdType): void;
+  private close(idOrType: AdType | string): void {
+    const adId = ['video', 'banner'].includes(idOrType)
+      ? this.visibleAds[idOrType as AdType]
+      : idOrType;
+    if (!adId) {
+      return;
+    }
+
+    const subscriber = this.subscribers[adId];
+    if (subscriber == null) {
+      return;
+    }
+
+    document.getElementById(adContainerId + adId)?.remove();
+    subscriber.onClose();
+    delete this.subscribers[adId];
+
+    if (this.visibleAds.video === adId) {
+      delete this.visibleAds.video;
+    } else if (this.visibleAds.banner === adId) {
+      delete this.visibleAds.banner;
     }
   }
 
@@ -193,9 +237,7 @@ export class Ads {
     } else if (data.event === 'reward') {
       subscriber.onReward();
     } else if (data.event === 'close') {
-      document.getElementById(adContainerId + data.adId)?.remove();
-      subscriber.onClose();
-      delete this.subscribers[data.adId];
+      this.close(data.adId);
     }
   }
 }

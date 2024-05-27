@@ -15,6 +15,9 @@ declare class Ads {
   constructor(params: AdsParams);
   showRewardedVideo(listeners?: AdEvents): Promise<boolean>;
   showBottomBanner(listeners?: AdEvents): Promise<boolean>;
+  closeRewardedVideo(): void;
+  closeBottomBanner(): void;
+  closeAll(): void;
   destroy(): void;
 }
 

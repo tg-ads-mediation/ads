@@ -1,9 +1,13 @@
 {
   "name": "@tg-ads-mediation/ads",
-  "version": "0.0.1-beta.2",
+  "version": "0.1.0-beta.0",
   "files": ["./dist"],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tg-ads-mediation/ads.git"
+  },
   "scripts": {
     "dev": "tsc -p tsconfig.dev.json --watch",
     "build": "tsc",

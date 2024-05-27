@@ -39,6 +39,18 @@ export class Ads implements AdsOriginal {
     return this.instance.showBottomBanner(listeners);
   }
 
+  public closeRewardedVideo(): void {
+    this.instance.closeRewardedVideo();
+  }
+
+  public closeBottomBanner(): void {
+    this.instance.closeBottomBanner();
+  }
+
+  public closeAll(): void {
+    this.instance.closeAll();
+  }
+
   public destroy(): void {
     return this.instance.destroy();
   }
