@@ -12,8 +12,7 @@ You need to install either `https://telegram.org/js/telegram-web-app.js` or [tma
 
 ### With NPM
 
-The package is in the preview stage, so you can try the beta version:
-`npm install --save @tg-ads-mediation/ads@beta`
+`npm install --save @tg-ads-mediation/ads`
 
 After installation:
 

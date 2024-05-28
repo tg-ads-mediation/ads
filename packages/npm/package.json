@@ -1,6 +1,6 @@
 {
   "name": "@tg-ads-mediation/ads",
-  "version": "0.1.0-beta.0",
+  "version": "1.0.0",
   "files": ["./dist"],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
