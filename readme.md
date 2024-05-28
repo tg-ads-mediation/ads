@@ -23,11 +23,6 @@ import {Ads} from '@tg-ads-mediation/ads'
 const ads = await Ads.create({
     key: 'your-access-key'
 })
-
-// methods return whether the ad was found and shown or not
-// false means that no proper ad was found
-const isVideoShown = await ads.showRewardedVideo()
-const isBannerShown = await ads.showBottomBanner()
 ```
 
 ### With CDN
@@ -72,7 +67,16 @@ const ads = await Ads.create({
 })
 ```
 
-## Handling events
+### Showing ads
+
+```typescript
+// methods return whether the ad was found and shown or not
+// false means that no proper ad was found
+const isVideoShown = await ads.showRewardedVideo()
+const isBannerShown = await ads.showBottomBanner()
+```
+
+### Handling events
 
 ```typescript
 // open and close callbacks
@@ -90,7 +94,17 @@ const isVideoOpen = await ads.showRewardedVideo({
 })
 ```
 
-# Destroying
+### Closing ads
+
+```typescript
+// close video or banner
+ads.closeRewardedVideo()
+ads.closeBottomBanner()
+// close all ads
+ads.closeAll()
+```
+
+### Destroying
 
 In case the ad instance is not needed anymore, it should be destroyed. The method unsubscribes from all the events and removes all the listeners.
 
